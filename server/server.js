@@ -2,6 +2,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const mongoose = require("mongoose");
+mongoose.set("useCreateIndex", true);
 
 const app = express();
 require("dotenv").config();
