@@ -26,6 +26,49 @@ const { admin } = require("./middleware/admin");
 
 // ========== PRODUCTS ========== //
 
+// BY ARRIVAL
+// "/api/product/articles?sortBy=createdAt&order=desc&limit=10&skip=5"
+// BY SOLD QTY
+// "/api/product/articles?sortBy=sold&order=desc&limit=4"
+app.get("/api/product/articles", (req, res) => {
+  const order = req.query.order || "asc";
+  const sortBy = req.query.sortBy || "_id";
+  const limit = parseInt(req.query.limit) || 100;
+  // const skip = req.query.skip || 0;
+
+  Product.find()
+    .populate("brand")
+    .populate("wood")
+    .sort([[sortBy, order]])
+    .limit(limit)
+    .exec((err, articles) => {
+      if (err) return res.status(400).send(err);
+      res.send(articles);
+    });
+});
+
+// /api/product/articles_by_id?id=90f09sdf,3490fdsf,dsdf903&type=array
+// /api/product/articles_by_id?id=90f09sdf&type=single
+app.get("/api/product/articles_by_id", (req, res) => {
+  const type = req.query.type;
+  let items = req.query.id;
+
+  if (type === "array") {
+    const ids = items.split(",");
+    items = [];
+    items = ids.map(item => {
+      return mongoose.Types.ObjectId(item);
+    });
+  }
+
+  Product.find({ _id: { $in: items } })
+    .populate("brand")
+    .populate("wood")
+    .exec((err, docs) => {
+      return res.status(200).send(docs);
+    });
+});
+
 app.post("/api/product/article", auth, admin, (req, res) => {
   const product = new Product(req.body);
 
